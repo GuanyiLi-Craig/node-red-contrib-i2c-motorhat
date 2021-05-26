@@ -8,8 +8,10 @@ module.exports = function(RED) {
         this.busno = isNaN(parseInt(n.busno)) ? 1 : parseInt(n.busno);
         var node = this;
 
-        node.bus  = I2C.openSync( node.busno );
         node.on("input", function(msg) {
+            var busno = msg.busno;
+            if (isNaN(busno)) busno = node.busno;
+            node.bus = I2C.openSync( busno );
             node.bus.scan(function(err, res) {
                 // result contains a buffer of bytes
                 if (err) {
@@ -32,59 +34,50 @@ module.exports = function(RED) {
     // The Motor Node
     function I2CMotorNode(n) {
         RED.nodes.createNode(this, n);
+        // get default values
         this.busno = isNaN(parseInt(n.busno)) ? 1 : parseInt(n.busno);
         this.address = parseInt(n.address);
         this.index = parseInt(n.index);
         this.speed = parseInt(n.speed);
         this.command = parseInt(n.command);
-        this.bus = I2C.openSync( this.busno );
+        this.runtime = parseInt(n.runtime);
+        this.bus = I2C.openSync( busno );
         var node = this;
-        var msg = n;
-        const callback = (err) => {
-            if (err) { node.error(err, msg); }
-            else { node.send(msg); }
-        };
-        //console.log(callback);
-        node.on("input", function(msg) {
-            console.log(msg);
-            var address = msg.address;
-            if (isNaN(address)) address = 111;
-            var command = msg.command;
-            if (isNaN(command)) command = 1;
-            var index = msg.index;
-            if (isNaN(index)) index = 1;
-            var speed = msg.speed;
-            if (isNaN(speed)) speed = 200
-            address = parseInt(address);
-            command = parseInt(command);
-            index = parseInt(index);
-            speed = parseInt(speed);
 
-            if (isNaN(address)) {
-                this.status({fill:"red",shape:"ring",text:"Address ("+address+") value is missing or incorrect"});
-                return;
-            } else {
-                this.status({});
-            }
+        node.on("input", function(msg) {
+            const callback = (err) => {
+                if (err) { node.error(err, msg); }
+                else { node.send(msg); }
+            };
+            var busno = parseInt(msg.busno);
+            if (isNaN(busno)) busno = node.busno;
+            var address = parseInt(msg.address);
+            if (isNaN(address)) address = node.address;
+            var command = parseInt(msg.command);
+            if (isNaN(command)) command = node.command;
+            var index = parseInt(msg.index);
+            if (isNaN(index)) index = node.index;
+            var speed = parseInt(msg.speed);
+            if (isNaN(speed)) speed = node.speed;
+            var runtime = parseInt(msg.runtime);
+            if (isNaN(runtime)) speed = node.runtime;
+
+            this.status({});
 
             try {
-                //console.log("create motor object");
-                const motor = new DC_Motor_Driver(new PWM_Driver(address, node.bus), index - 1);
-                //console.log("motor object:");
-                //console.log(motor);
-                //console.log(callback);
+                const motor = new DC_Motor_Driver(new PWM_Driver(address, bus), index - 1);
                 motor.init(callback);
                 motor.run(command, callback);
-                motor.setSpeed(node.speed, callback);
-		console.log("start sleep 5 s");
-                sleep(5000).then(() => motor.run(4, callback));
-		//motor.run(4, callback);
+                motor.setSpeed(speed, callback);
+
+                sleep(runtime * 1000).then(() => motor.run(4, callback));
             } catch(err) {
                 msg = {};
                 msg["address"] = address;
                 msg["cmd"] = command;
-                msg["busno"] = this.busno;
+                msg["busno"] = busno;
                 msg["index"] = index;
+                msg["runTime"] = runtime;
 
                 this.error(err,msg);
             }
@@ -222,14 +215,11 @@ class PWM_Driver {
 
     write8(command, value, callback) {
         // Writes an 8-bit value to the specified register/address
-        //console.log("write 8");
-        //console.log(callback);
         try {
             this._bus.writeByte(this._address, command, value, callback);
         } catch(err) {
             throw command + " - " + value + " - " + err.message;
         }
-        console.log(this._address + " - " + command + " - " + value);
     }
 
     softwareReset(address) {
@@ -238,20 +228,14 @@ class PWM_Driver {
     }
   
     init(callback) {
-        //console.log("init");
-        //console.log(callback);
         this.setAllPWM(0, 0, callback);
-        //console.log("init mode 2");
         this.write8(this._MODE2, this._OUTDRV, callback);
-        //console.log("init mode 1");
         this.write8(this._MODE1, this._ALLCALL, callback);
-        sleep(5).then(() => console.log("wait 5 ms"));                             // wait for oscillator
-        //console.log("init set all");     
+        sleep(5).then(() => console.log("wait 5 ms"));                             // wait for oscillator   
         var mode1 = this._bus.readByte(this._address, this._MODE1, callback);
         mode1 = mode1 & ~this._SLEEP;         // wake up (reset sleep)
         this.write8(this._MODE1, mode1, callback);
         sleep(5).then(() => console.log("wait 5 ms"));                             // wait for oscillator
-        //console.log("init oscillator");
     }
   
     setPWMFreq(freq, callback) {
@@ -282,7 +266,6 @@ class PWM_Driver {
   
     setAllPWM(on, off, callback) {
         // Sets a all PWM channels
-        console.log(callback);
         this.write8(this._ALL_LED_ON_L, on & 0xFF, callback);
         this.write8(this._ALL_LED_ON_H, on >> 8, callback);
         this.write8(this._ALL_LED_OFF_L, off & 0xFF, callback);
