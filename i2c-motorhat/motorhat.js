@@ -141,17 +141,17 @@ class DC_Motor_Driver {
         if (this._pwmDriver == null)
             return;
 
-        if (command == this.FORWARD) {
-            this.setPin(this.IN2pin, 0, callback)
-            this.setPin(this.IN1pin, 1, callback)
+        if (command == this._FORWARD) {
+            this.setPin(this._IN2pin, 0, callback)
+            this.setPin(this._IN1pin, 1, callback)
         }
-        if (command == this.BACKWARD) {
-            this.setPin(this.IN1pin, 0, callback)
-            this.setPin(this.IN2pin, 1, callback)
+        if (command == this._BACKWARD) {
+            this.setPin(this._IN1pin, 0, callback)
+            this.setPin(this._IN2pin, 1, callback)
         }
-        if (command == this.RELEASE) {
-            this.setPin(this.IN1pin, 0, callback)
-            this.setPin(this.IN2pin, 0, callback)
+        if (command == this._RELEASE) {
+            this.setPin(this._IN1pin, 0, callback)
+            this.setPin(this._IN2pin, 0, callback)
         }
     }
 
@@ -162,7 +162,7 @@ class DC_Motor_Driver {
         if (speed > 255)
             speed = 255;
 
-        self._pwmDriver.setPWM(self.PWMpin, 0, speed*16, callback);
+        this._pwmDriver.setPWM(this._PWMpin, 0, speed*16, callback);
     }
 
     setPin(value, callback) {
@@ -174,10 +174,10 @@ class DC_Motor_Driver {
             throw "Pin value must be 0 or 1!";
 
         if (value == 0)
-            self._pwmDriver.setPWM(pin, 0, 4096, callback);
+            this._pwmDriver.setPWM(pin, 0, 4096, callback);
 
         if (value == 1)
-            self._pwmDriver.setPWM(pin, 4096, 0, callback);
+            this._pwmDriver.setPWM(pin, 4096, 0, callback);
     }
 
 }
@@ -266,10 +266,10 @@ class PWM_Driver {
   
     setPWM(channel, on, off, callback) {
         //Sets a single PWM channel
-        this.write8(this._LED0_ON_L+4*channel, on & 0xFF, callback);
-        this.write8(this._LED0_ON_H+4*channel, on >> 8, callback);
-        this.write8(this._LED0_OFF_L+4*channel, off & 0xFF, callback);
-        this.write8(this._LED0_OFF_H+4*channel, off >> 8, callback);
+        this.write8(this._LED0_ON_L + 4*channel, on & 0xFF, callback);
+        this.write8(this._LED0_ON_H + 4*channel, on >> 8, callback);
+        this.write8(this._LED0_OFF_L + 4*channel, off & 0xFF, callback);
+        this.write8(this._LED0_OFF_H + 4*channel, off >> 8, callback);
     }
   
     setAllPWM(on, off, callback) {
