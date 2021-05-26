@@ -42,13 +42,12 @@ module.exports = function(RED) {
             if (err) { node.error(err, msg); }
             else { node.send(msg); }
         };
-        const motor = new DC_Motor_Driver(PWM_Driver(this.address, I2C.openSync( this.busno )), this.index);
-        motor.init(callback);
-        node.on("input", function(msg) {
+        
+	node.on("input", function(msg) {
             var address = node.address;
-            if (isNaN(address)) address = 111;
+            if (isNaN(address)) address = "111";
             var command = node.command;
-            if (isNaN(command)) command = 1;
+            if (isNaN(command)) command = "1";
 
             address = parseInt(address);
             command = parseInt(command);
@@ -61,9 +60,11 @@ module.exports = function(RED) {
             }
 
             try {
+                const motor = new DC_Motor_Driver(new PWM_Driver(this.address, I2C.openSync( this.busno )), this.index);
+        	motor.init(callback);
                 motor.run(command, callback);
                 motor.setSpeed(this.speed, callback);
-                sleep(1);
+                sleep(2);
             } catch(err) {
                 this.error(err,msg);
             }
@@ -203,7 +204,7 @@ class PWM_Driver {
         try {
             this._bus.writeByte(this._address, command, value, callback);
         } catch(err) {
-            this.error(err, value);
+            throw "Cannot write to i2c.";
         }
     }
 
