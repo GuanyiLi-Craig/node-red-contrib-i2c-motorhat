@@ -37,12 +37,14 @@ module.exports = function(RED) {
         this.index = parseInt(n.index);
         this.speed = parseInt(n.speed);
         this.command = parseInt(n.command);
+	this.bus = I2C.openSync( this.busno );
         var node = this;
-        const callback = err => {
+	var msg = n;
+        const callback = (err) => {
             if (err) { node.error(err, msg); }
             else { node.send(msg); }
         };
-        
+        console.log(callback);
 	node.on("input", function(msg) {
             var address = node.address;
             if (isNaN(address)) address = "111";
@@ -60,12 +62,22 @@ module.exports = function(RED) {
             }
 
             try {
-                const motor = new DC_Motor_Driver(new PWM_Driver(this.address, I2C.openSync( this.busno )), this.index);
+                console.log("create motor object");
+		const motor = new DC_Motor_Driver(new PWM_Driver(address, node.bus), node.index);
+		console.log("motor object:");
+		console.log(motor);
+		console.log(callback);
         	motor.init(callback);
                 motor.run(command, callback);
-                motor.setSpeed(this.speed, callback);
+                motor.setSpeed(node.speed, callback);
                 sleep(2);
             } catch(err) {
+		msg = {};
+		msg["address"] = address;
+		msg["cmd"] = command;
+		msg["busno"] = this.busno;
+		msg["index"] = this.index;
+
                 this.error(err,msg);
             }
         });
@@ -95,19 +107,19 @@ class DC_Motor_Driver {
         var in1 = 0;
         var in2 = 0;
 
-        if (num == 0) {
+        if (motorIndex == 0) {
 			pwm = 8;
 			in2 = 9;
 			in1 = 10;
-        } else if (num == 1) {
+        } else if (motorIndex == 1) {
 			pwm = 13;
 			in2 = 12;
 			in1 = 11;
-		} else if (num == 2) {
+		} else if (motorIndex == 2) {
 			pwm = 2;
 			in2 = 3;
 			in1 = 4;
-		} else if (num == 3) {
+		} else if (motorIndex == 3) {
 			pwm = 7;
 			in2 = 6;
 			in1 = 5;
@@ -120,6 +132,8 @@ class DC_Motor_Driver {
     }
 
     init(callback) {
+	console.log("start init");
+	console.log(callback);
         this._pwmDriver.init(callback);
     }
 
@@ -170,7 +184,7 @@ class DC_Motor_Driver {
 
 class PWM_Driver {
 
-    constructor(address, bus) {
+    constructor(address, bus, callback) {
         this._MODE1              = 0x00;
         this._MODE2              = 0x01;
         this._SUBADR1            = 0x02;
@@ -196,16 +210,18 @@ class PWM_Driver {
         // node
         this._address            = address;
         this._bus                = bus;
-        this.init();
     }
 
     write8(command, value, callback) {
         // Writes an 8-bit value to the specified register/address
+	console.log("write 8");
+	console.log(callback);
         try {
             this._bus.writeByte(this._address, command, value, callback);
         } catch(err) {
-            throw "Cannot write to i2c.";
+            throw command + " - " + value + " - " + err.message;
         }
+	console.log(command + " - " + value);
     }
 
     softwareReset(address) {
@@ -214,15 +230,20 @@ class PWM_Driver {
     }
   
     init(callback) {
-        this.setAllPWM(0, 0);
-        this. write8(this.__MODE2, this.__OUTDRV, callback);
-        this.write8(this.__MODE1, this.__ALLCALL, callback);
+	console.log("init");
+	console.log(callback);
+        this.setAllPWM(0, 0, callback);
+	console.log("init mode 2");
+        this.write8(this._MODE2, this._OUTDRV, callback);
+	console.log("init mode 1");
+        this.write8(this._MODE1, this._ALLCALL, callback);
         sleep(5);                             // wait for oscillator
-      
-        var mode1 = this._bus.readByte(this._address, this.__MODE1, callback);
-        mode1 = mode1 & ~this.__SLEEP;         // wake up (reset sleep)
-        this.write8(this.__MODE1, mode1, callback);
+        console.log("init set all");     
+        var mode1 = this._bus.readByte(this._address, this._MODE1, callback);
+        mode1 = mode1 & ~this._SLEEP;         // wake up (reset sleep)
+        this.write8(this._MODE1, mode1, callback);
         sleep(5);                             // wait for oscillator
+	console.log("init oscillator");
     }
   
     setPWMFreq(freq, callback) {
@@ -234,28 +255,29 @@ class PWM_Driver {
 
         var prescale = math.floor(prescaleval + 0.5);
     
-        var oldmode = this._bus.readByte(this._address, this.__MODE1);
+        var oldmode = this._bus.readByte(this._address, this._MODE1);
         var newmode = (oldmode & 0x7F) | 0x10;         // sleep
-        this.write8(this.__MODE1, newmode, callback);  // go to sleep
-        this.write8(this.__PRESCALE, int(math.floor(prescale)), callback);
-        this.write8(this.__MODE1, oldmode, callback);
+        this.write8(this._MODE1, newmode, callback);  // go to sleep
+        this.write8(this._PRESCALE, int(math.floor(prescale)), callback);
+        this.write8(this._MODE1, oldmode, callback);
         sleep(5);
-        this.write8(this.__MODE1, oldmode | 0x80, callback);
+        this.write8(this._MODE1, oldmode | 0x80, callback);
     }
   
     setPWM(channel, on, off, callback) {
         //Sets a single PWM channel
-        this.write8(this.__LED0_ON_L+4*channel, on & 0xFF, callback);
-        this.write8(this.__LED0_ON_H+4*channel, on >> 8, callback);
-        this.write8(this.__LED0_OFF_L+4*channel, off & 0xFF, callback);
-        this.write8(this.__LED0_OFF_H+4*channel, off >> 8, callback);
+        this.write8(this._LED0_ON_L+4*channel, on & 0xFF, callback);
+        this.write8(this._LED0_ON_H+4*channel, on >> 8, callback);
+        this.write8(this._LED0_OFF_L+4*channel, off & 0xFF, callback);
+        this.write8(this._LED0_OFF_H+4*channel, off >> 8, callback);
     }
   
     setAllPWM(on, off, callback) {
         // Sets a all PWM channels
-        this.write8(this.__ALL_LED_ON_L, on & 0xFF, callback);
-        this.write8(this.__ALL_LED_ON_H, on >> 8), callback;
-        this.write8(this.__ALL_LED_OFF_L, off & 0xFF, callback);
-        this.write8(this.__ALL_LED_OFF_H, off >> 8, callback);
+	console.log(callback);
+        this.write8(this._ALL_LED_ON_L, on & 0xFF, callback);
+        this.write8(this._ALL_LED_ON_H, on >> 8 callback);
+        this.write8(this._ALL_LED_OFF_L, off & 0xFF, callback);
+        this.write8(this._ALL_LED_OFF_H, off >> 8, callback);
     }
 }
