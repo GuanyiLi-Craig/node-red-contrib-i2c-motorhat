@@ -41,7 +41,7 @@ module.exports = function(RED) {
         this.speed = parseInt(n.speed);
         this.command = parseInt(n.command);
         this.runtime = parseInt(n.runtime);
-        this.bus = I2C.openSync( busno );
+        this.bus = I2C.openSync( this.busno );
         var node = this;
 
         node.on("input", function(msg) {
@@ -65,7 +65,7 @@ module.exports = function(RED) {
             this.status({});
 
             try {
-                const motor = new DC_Motor_Driver(new PWM_Driver(address, bus), index - 1);
+                const motor = new DC_Motor_Driver(new PWM_Driver(address, node.bus), index - 1);
                 motor.init(callback);
                 motor.run(command, callback);
                 motor.setSpeed(speed, callback);
