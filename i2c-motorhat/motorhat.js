@@ -35,24 +35,27 @@ module.exports = function(RED) {
     function I2CMotorNode(n) {
         RED.nodes.createNode(this, n);
         // get default values
-        this.busno = isNaN(n.busno) ? 1 : parseInt(n.busno);
-        this.address = isNaN(n.address) ? 96 : parseInt(n.address);
+        var nBusno = n.busno || "1";
+        var nAddress = n.address || "96";
+        this.busno = parseInt(nBusno);
+        this.address = parseInt(nAddress);
         this.bus = I2C.openSync( this.busno );
-        const pwmDriver = new PWM_Driver(this.address, this.bus);
-	const callbackNode = (err) => {
-            if (err) { node.error(err, n); }
-            else { node.send(n); }
-	};
-	pwmDriver.init(callbackNode);
-	this.motors = [
-		new DC_Motor_Driver(pwmDriver, 0),
-		new DC_Motor_Driver(pwmDriver, 1),
-		new DC_Motor_Driver(pwmDriver, 2),
-		new DC_Motor_Driver(pwmDriver, 3)];
-        var node = this;
-        console.log("address " + this.address + " bus " + this.bus);
         
-	node.on("input", function(msg) {
+        const pwmDriver = new PWM_Driver(this.address, this.bus);
+        const callbackNode = (err) => {
+                if (err) { node.error(err, n); }
+                else { node.send(n); }
+        };
+        pwmDriver.init(callbackNode);
+        this.motors = [
+            new DC_Motor_Driver(pwmDriver, 0),
+            new DC_Motor_Driver(pwmDriver, 1),
+            new DC_Motor_Driver(pwmDriver, 2),
+            new DC_Motor_Driver(pwmDriver, 3)];
+            var node = this;
+            console.log("address " + this.address + " bus " + this.bus);
+            
+        node.on("input", function(msg) {
             const callback = (err) => {
                 if (err) { node.error(err, msg); }
                 else { node.send(msg); }
