@@ -52,8 +52,7 @@ module.exports = function(RED) {
             new DC_Motor_Driver(pwmDriver, 1),
             new DC_Motor_Driver(pwmDriver, 2),
             new DC_Motor_Driver(pwmDriver, 3)];
-            var node = this;
-            console.log("address " + this.address + " bus " + this.bus);
+        var node = this;
             
         node.on("input", function(msg) {
             const callback = (err) => {
