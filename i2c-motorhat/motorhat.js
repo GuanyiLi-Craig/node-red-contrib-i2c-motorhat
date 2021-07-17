@@ -35,8 +35,8 @@ module.exports = function(RED) {
     function I2CMotorNode(n) {
         RED.nodes.createNode(this, n);
         // get default values
-        this.busno = isNaN(parseInt(n.busno)) ? 1 : parseInt(n.busno);
-        this.address = 96;//isNaN(parseInt(n.address)) ? 96 : parseInt(n.address);
+        this.busno = isNaN(n.busno) ? 1 : parseInt(n.busno);
+        this.address = isNaN(n.address) ? 96 : parseInt(n.address);
         this.bus = I2C.openSync( this.busno );
         const pwmDriver = new PWM_Driver(this.address, this.bus);
 	const callbackNode = (err) => {
