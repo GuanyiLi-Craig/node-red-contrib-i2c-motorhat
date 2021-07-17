@@ -44,16 +44,16 @@
 
 <script type="text/html" data-template-name="i2c DC Motor">
     <div class="form-row">
-        <label for="node-motor-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-motor-name" placeholder="Name">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-motor-busno"><i class="fa fa-random"></i> Bus Number</label>
-        /dev/i2c-<input id="node-motor-busno" class="I2C-motor-bus" placeholder="1" min=0 max=7>
+        <label for="node-input-busno"><i class="fa fa-random"></i> Bus Number</label>
+        /dev/i2c-<input id="node-input-busno" class="I2C-in-address" placeholder="[msg.bus]" min=0 max=7 style="width:40px; height:16px;">
     </div>
     <div class="form-row">
-        <label for="node-motor-address"><i class="fa fa-cog"></i> i2c Address</label>
-        <input type="number" id="node-motor-address" class="I2C-motor-address" placeholder="96" min=3 max=127>
+        <label for="node-input-address"><i class="fa fa-address-card-o"></i> Bus Address</label>
+        <input type="number" id="node-input-address" class="I2C-in-address" placeholder="[msg.address]" min=3 max=127>
     </div>
 </script>
  
@@ -75,7 +75,7 @@
     RED.nodes.registerType('i2c DC Motor', {
         category: 'i2c bus',
         defaults: {
-            name: {value:"Motor Control"},
+            name: {value:""},
             busno: {value:"1"},
             address: {value:"96"},
         },
@@ -83,12 +83,23 @@
         inputs:1,
         outputs:1,
         icon: "serial.png",
-        align: "right",
         label: function() { return this.name||'i2c DC Motor'; },
         labelStyle: function() { return this.name?"node_label_italic":"";},
         oneditprepare: function() {
-            this.busno = !this.busno ? 1 : this.busno;
-            this.address = !this.address ? 96 : this.address;
+            if (this.busno === undefined) {
+                $("#node-input-busno").val(1);
+            }
+            $("#node-input-busno").spinner({
+                min:0,
+                max:7
+            });
+            if (this.address === undefined) {
+                $("#node-input-address").val(96);
+            }
+            $("#node-input-address").spinner({
+                min:0,
+                max:127
+            });
         }
     });
 </script>
