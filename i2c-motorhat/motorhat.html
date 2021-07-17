@@ -44,37 +44,31 @@
 
 <script type="text/html" data-template-name="i2c DC Motor">
     <div class="form-row">
-        <label for="node-motor-busno"><i class="fa fa-random"></i> Bus Number [1]</label>
-        /dev/i2c-<input id="node-motor-busno" class="I2C-motor-address" placeholder="[msg.bus]" min=0 max=7 style="width:40px; height:16px;">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-motor-address"><i class="fa fa-address-card-o"></i> Bus Address [111(6f)]</label>
-        <input type="number" id="node-motor-address" class="I2C-motor-address" placeholder="[msg.address]" min=3 max=127>
+        <label for="node-input-busno"><i class="fa fa-random"></i> Bus Number</label>
+        /dev/i2c-<input id="node-input-busno" placeholder="1" min=0 max=7 style="width:40px; height:16px;">
     </div>
     <div class="form-row">
-        <label for="node-motor-index"><i class="fa fa-empire"></i> Index</label>
-        <input type="number" id="node-motor-index" class="I2C-motor-index" placeholder="[msg.index]" min=0 max=3>
-    </div>
-    <div class="form-row">
-        <label for="node-motor-speed"><i class="fa fa-empire"></i> Speed</label>
-        <input type="number" id="node-motor-speed" class="I2C-motor-speed" placeholder="[msg.speed]" min=0 max=255>
-    </div>
-    <div class="form-row">
-        <label for="node-motor-command"><i class="fa fa-empire"></i> Command</label>
-        <input type="number" id="node-motor-command" class="I2C-motor-command" placeholder="[msg.command]" min=1 max=4>
-    </div>
-    <div class="form-row">
-        <label for="node-motor-runtime"><i class="fa fa-empire"></i> Run Time</label>
-        <input type="number" id="node-motor-runtime" class="I2C-motor-runtime" placeholder="[msg.runtime]" min=0 max=10>
-    </div>
-    <div class="form-row">
-        <label for="node-motor-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-motor-name" placeholder="Name">
+        <label for="node-input-address"><i class="fa fa-address-card-o"></i> Bus Address</label>
+        <input type="number" id="node-input-address" placeholder="96" min=0 max=127>
     </div>
 </script>
  
 <script type="text/html" data-help-name="i2c DC Motor">
-    <p>Provides a connection to an I2C address.</p>
+    <p>A node-red node providing control for Afafruit Motor Hat using raspberry pi.</p>
+    <p>More about Motor Hat </p>
+    <p>https://learn.adafruit.com/adafruit-dc-and-stepper-motor-hat-for-raspberry-pi </p>
+    <p><strong>Name:</strong><br/>
+    Define the msg name if you wish to change the name displayed on the node.</p>
+
+    <p><strong>Bus Number:</strong><br/>
+    The bus number by default is set to 1.</p>
+
+    <p><strong>i2c Address:</strong><br/>
+    The Address by default is set to 96.</p>
 </script>
 
 <script type="text/javascript">
@@ -83,32 +77,28 @@
         defaults: {
             name: {value:""},
             busno: {value:"1"},
-            address: {value:"111"},
-            index: {value:"3"},
-            speed: {value:"200"},
-            runtime: {value:"1"},
-            command: {value:"1"},
+            address: {value:"96"},
         },
         color:"#E35253",
         inputs:1,
         outputs:1,
         icon: "serial.png",
-        align: "right",
         label: function() { return this.name||'i2c DC Motor'; },
         labelStyle: function() { return this.name?"node_label_italic":"";},
         oneditprepare: function() {
-            if (this.payloadType == null) {
-                this.payloadType = "msg";
-            } else if (this.payloadType === 'string' ) {
-                this.payloadType = "str";
-            }
-
             if (this.busno === undefined) {
-                $("#node-motor-busno").val(1);
+                $("#node-input-busno").val(1);
             }
-            $("#node-motor-busno").spinner({
+            $("#node-input-busno").spinner({
                 min:0,
                 max:7
+            });
+            if (this.address === undefined) {
+                $("#node-input-address").val(96);
+            }
+            $("#node-input-address").spinner({
+                min:0,
+                max:127
             });
         }
     });
