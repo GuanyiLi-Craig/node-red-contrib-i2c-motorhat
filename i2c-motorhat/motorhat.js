@@ -37,10 +37,6 @@ module.exports = function(RED) {
         // get default values
         this.busno = isNaN(parseInt(n.busno)) ? 1 : parseInt(n.busno);
         this.address = 96;//isNaN(parseInt(n.address)) ? 96 : parseInt(n.address);
-        this.index = parseInt(n.index);
-        this.speed = parseInt(n.speed);
-        this.command = parseInt(n.command);
-        this.runtime = parseInt(n.runtime);
         this.bus = I2C.openSync( this.busno );
         const pwmDriver = new PWM_Driver(this.address, this.bus);
 	const callbackNode = (err) => {
@@ -63,13 +59,13 @@ module.exports = function(RED) {
             };
 
             var command = parseInt(msg.command);
-            if (isNaN(command)) command = node.command;
+            if (isNaN(command)) command = 4;
             var index = parseInt(msg.index);
-            if (isNaN(index)) index = node.index;
+            if (isNaN(index)) index = 1;
             var speed = parseInt(msg.speed);
-            if (isNaN(speed)) speed = node.speed;
+            if (isNaN(speed)) speed = 0;
             var runtime = parseInt(msg.runtime);
-            if (isNaN(runtime)) speed = node.runtime;
+            if (isNaN(runtime)) runtime = 0;
 
             this.status({});
 
@@ -79,11 +75,12 @@ module.exports = function(RED) {
                 motor.setSpeed(speed, callback);
 
                 if (runtime > 0)
-		    sleep(runtime * 1000).then(() => motor.run(4, callback));
+		            sleep(runtime * 1000).then(() => motor.run(4, callback));
             } catch(err) {
                 msg = {};
                 msg["cmd"] = command;
                 msg["index"] = index;
+                msg["speed"] = speed;
                 msg["runTime"] = runtime;
                 console.log(err);
                 this.error(err,msg);
