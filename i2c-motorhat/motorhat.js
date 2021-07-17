@@ -36,23 +36,32 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, n);
         // get default values
         this.busno = isNaN(parseInt(n.busno)) ? 1 : parseInt(n.busno);
-        this.address = parseInt(n.address);
+        this.address = 96;//isNaN(parseInt(n.address)) ? 96 : parseInt(n.address);
         this.index = parseInt(n.index);
         this.speed = parseInt(n.speed);
         this.command = parseInt(n.command);
         this.runtime = parseInt(n.runtime);
         this.bus = I2C.openSync( this.busno );
+        const pwmDriver = new PWM_Driver(this.address, this.bus);
+	const callbackNode = (err) => {
+            if (err) { node.error(err, n); }
+            else { node.send(n); }
+	};
+	pwmDriver.init(callbackNode);
+	this.motors = [
+		new DC_Motor_Driver(pwmDriver, 0),
+		new DC_Motor_Driver(pwmDriver, 1),
+		new DC_Motor_Driver(pwmDriver, 2),
+		new DC_Motor_Driver(pwmDriver, 3)];
         var node = this;
-
-        node.on("input", function(msg) {
+        console.log("address " + this.address + " bus " + this.bus);
+        
+	node.on("input", function(msg) {
             const callback = (err) => {
                 if (err) { node.error(err, msg); }
                 else { node.send(msg); }
             };
-            var busno = parseInt(msg.busno);
-            if (isNaN(busno)) busno = node.busno;
-            var address = parseInt(msg.address);
-            if (isNaN(address)) address = node.address;
+
             var command = parseInt(msg.command);
             if (isNaN(command)) command = node.command;
             var index = parseInt(msg.index);
@@ -65,20 +74,18 @@ module.exports = function(RED) {
             this.status({});
 
             try {
-                const motor = new DC_Motor_Driver(new PWM_Driver(address, node.bus), index - 1);
-                motor.init(callback);
+                const motor = node.motors[index-1];
                 motor.run(command, callback);
                 motor.setSpeed(speed, callback);
 
-                sleep(runtime * 1000).then(() => motor.run(4, callback));
+                if (runtime > 0)
+		    sleep(runtime * 1000).then(() => motor.run(4, callback));
             } catch(err) {
                 msg = {};
-                msg["address"] = address;
                 msg["cmd"] = command;
-                msg["busno"] = busno;
                 msg["index"] = index;
                 msg["runTime"] = runtime;
-
+                console.log(err);
                 this.error(err,msg);
             }
         });

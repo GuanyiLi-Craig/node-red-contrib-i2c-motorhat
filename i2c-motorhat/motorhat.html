@@ -48,7 +48,7 @@
         /dev/i2c-<input id="node-motor-busno" class="I2C-motor-address" placeholder="[msg.bus]" min=0 max=7 style="width:40px; height:16px;">
     </div>
     <div class="form-row">
-        <label for="node-motor-address"><i class="fa fa-address-card-o"></i> Bus Address [111(6f)]</label>
+        <label for="node-motor-address"><i class="fa fa-address-card-o"></i> Bus Address [96]</label>
         <input type="number" id="node-motor-address" class="I2C-motor-address" placeholder="[msg.address]" min=3 max=127>
     </div>
     <div class="form-row">
@@ -81,9 +81,9 @@
     RED.nodes.registerType('i2c DC Motor', {
         category: 'i2c bus',
         defaults: {
-            name: {value:""},
+            name: {value:"motor control"},
             busno: {value:"1"},
-            address: {value:"111"},
+            address: {value:"96"},
             index: {value:"3"},
             speed: {value:"200"},
             runtime: {value:"1"},
