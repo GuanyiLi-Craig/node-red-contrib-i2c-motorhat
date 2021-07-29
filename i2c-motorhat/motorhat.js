@@ -165,7 +165,7 @@ const sleep = (milliseconds) => {
 class Stepper_Motor_Driver {
     constructor(pwmDriver, motorIndex, steps) {
         this._MICROSTEPS = 8;
-	    this._MICROSTEP_CURVE = [0, 50, 98, 142, 180, 212, 236, 250, 255];
+	this._MICROSTEP_CURVE = [0, 50, 98, 142, 180, 212, 236, 250, 255];
         this._FORWARD = 1;
         this._BACKWARD = 2;
         this._BRAKE = 3;
@@ -177,28 +177,28 @@ class Stepper_Motor_Driver {
         this._MICROSTEP = 4;
 
         this._pwmDriver = pwmDriver;
-		this._revSteps = steps;
-		this._motorIndex = motorIndex;
-		this._secPerStep = 0.1;
-		this._steppingCounter = 0;
-		this._currentStep = 0;
+	this._revSteps = steps;
+	this._motorIndex = motorIndex;
+	this._secPerStep = 0.1;
+	this._steppingCounter = 0;
+	this._currentStep = 0;
 
-		if (num == 0) {
-			this._PWMA = 8
-			this._AIN2 = 9
-			this._AIN1 = 10
-			this._PWMB = 13
-			this._BIN2 = 12
-			this._BIN1 = 11
-        } else if (num == 1) {
-			this._PWMA = 2
-			this._AIN2 = 3
-			this._AIN1 = 4
-			this._PWMB = 7
-			this._BIN2 = 6
-			this._BIN1 = 5
+	if (motorIndex == 0) {
+		this._PWMA = 8
+		this._AIN2 = 9
+		this._AIN1 = 10
+		this._PWMB = 13
+		this._BIN2 = 12
+		this._BIN1 = 11
+        } else if (motorIndex == 1) {
+		this._PWMA = 2
+		this._AIN2 = 3
+		this._AIN1 = 4
+		this._PWMB = 7
+		this._BIN2 = 6
+		this._BIN1 = 5
         } else
-            throw "MotorHAT Stepper must be between 1 and 2 inclusive";
+		throw "MotorHAT Stepper must be between 1 and 2 inclusive";
     }
 
     init(callback) {
@@ -214,8 +214,8 @@ class Stepper_Motor_Driver {
         var pwm_a = 255;
         var pwm_b = 255; 
 
-		// first determine what sort of stepping procedure we're up to
-		if (style == this._SINGLE) {
+	// first determine what sort of stepping procedure we're up to
+	if (style == this._SINGLE) {
             if ((this._currentStep/(this._MICROSTEPS/2)) % 2) {
                 // we're at an odd step, weird
                 if (command == this._FORWARD)
@@ -224,87 +224,86 @@ class Stepper_Motor_Driver {
                     this._currentStep -= this._MICROSTEPS/2;
             }
         } else {
-				// go to next even step
-				if (command == this._FORWARD)
-					this._currentStep += this._MICROSTEPS;
-				else
-					this._currentStep -= this._MICROSTEPS;
+		// go to next even step
+		if (command == this._FORWARD)
+			this._currentStep += this._MICROSTEPS;
+		else
+			this._currentStep -= this._MICROSTEPS;
         }
 
-		if (style == this._DOUBLE) {
-			if (!(this._currentStep/(this._MICROSTEPS/2) % 2)) {
-				// we're at an even step, weird
-				if (command == this._FORWARD)
-					this._currentStep += this._MICROSTEPS/2;
-				else
-					this._currentStep -= this._MICROSTEPS/2;
-            } else {
-				// go to next odd step
-				if (command == this._FORWARD)
-					this._currentStep += this._MICROSTEPS;
-				else
-					this._currentStep -= this._MICROSTEPS;
-            }
-        }
-
-		if (style == this._INTERLEAVE) {
+	if (style == this._DOUBLE) {
+		if (!(this._currentStep/(this._MICROSTEPS/2) % 2)) {
+			// we're at an even step, weird
 			if (command == this._FORWARD)
 				this._currentStep += this._MICROSTEPS/2;
 			else
 				this._currentStep -= this._MICROSTEPS/2;
-        }
-
-		if (style == this._MICROSTEP) {
+        	} else {
+			// go to next odd step
 			if (command == this._FORWARD)
-				this._currentStep += 1;
-			else {
-				this._currentStep -= 1;
-
-				// go to next 'step' and wrap around
-				this._currentStep += this._MICROSTEPS * 4;
-				this._currentStep %= this._MICROSTEPS * 4;
-
-				pwm_a = pwm_b = 0;
-            }
-
-			if ((this._currentStep >= 0) && (this._currentStep < this._MICROSTEPS)) {
-				pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS - this._currentStep];
-				pwm_b = this._MICROSTEP_CURVE[this._currentStep];
-            } else if ((this._currentStep >= this._MICROSTEPS) && (this._currentStep < this._MICROSTEPS*2)) {
-				pwm_a = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS];
-				pwm_b = this._MICROSTEP_CURVE[this._MICROSTEPS*2 - this._currentStep];
-            } else if ((this._currentStep >= this._MICROSTEPS*2) && (this._currentStep < this._MICROSTEPS*3)) {
-				pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS*3 - this._currentStep];
-				pwm_b = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS*2];
-            } else if ((this._currentStep >= this._MICROSTEPS*3) && (this._currentStep < this._MICROSTEPS*4)) {
-				pwm_a = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS*3];
-				pwm_b = this._MICROSTEP_CURVE[this._MICROSTEPS*4 - this._currentStep];
-            }
+				this._currentStep += this._MICROSTEPS;
+			else
+				this._currentStep -= this._MICROSTEPS;
+	        }
         }
 
-		// go to next 'step' and wrap around
-		this._currentStep += this._MICROSTEPS * 4;
-		this._currentStep %= this._MICROSTEPS * 4;
+	if (style == this._INTERLEAVE) {
+		if (command == this._FORWARD)
+			this._currentStep += this._MICROSTEPS/2;
+		else
+			this._currentStep -= this._MICROSTEPS/2;
+        }
 
-		// only really used for microstepping, otherwise always on!
-		this._pwmDriver._pwm.setPWM(this._PWMA, 0, pwm_a*16, callback);
-		this._pwmDriver._pwm.setPWM(this._PWMB, 0, pwm_b*16, callback);
+	if (style == this._MICROSTEP) {
+		if (command == this._FORWARD)
+			this._currentStep += 1;
+		else {
+			this._currentStep -= 1;
 
-		// set up coil energizing!
-		coils = [0, 0, 0, 0]
+			// go to next 'step' and wrap around
+			this._currentStep += this._MICROSTEPS * 4;
+			this._currentStep %= this._MICROSTEPS * 4;
+			pwm_a = pwm_b = 0;
+           	}
 
-		if (style == this._MICROSTEP) {
-			if ((this._currentStep >= 0) && (this._currentStep < this._MICROSTEPS)) {
-				coils = [1, 1, 0, 0];
-            } else if ((this._currentStep >= this._MICROSTEPS) && (this._currentStep < this._MICROSTEPS*2)) {
-				coils = [0, 1, 1, 0];
-			} else if ((this._currentStep >= this._MICROSTEPS*2) && (this._currentStep < this._MICROSTEPS*3)) {
-				coils = [0, 0, 1, 1];
-            } else if ((this._currentStep >= this._MICROSTEPS*3) && (this._currentStep < this._MICROSTEPS*4)) {
-				coils = [1, 0, 0, 1];
-            }
+		if ((this._currentStep >= 0) && (this._currentStep < this._MICROSTEPS)) {
+			pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS - this._currentStep];
+			pwm_b = this._MICROSTEP_CURVE[this._currentStep];
+            	} else if ((this._currentStep >= this._MICROSTEPS) && (this._currentStep < this._MICROSTEPS*2)) {
+			pwm_a = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS];
+			pwm_b = this._MICROSTEP_CURVE[this._MICROSTEPS*2 - this._currentStep];
+            	} else if ((this._currentStep >= this._MICROSTEPS*2) && (this._currentStep < this._MICROSTEPS*3)) {
+			pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS*3 - this._currentStep];
+			pwm_b = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS*2];
+            	} else if ((this._currentStep >= this._MICROSTEPS*3) && (this._currentStep < this._MICROSTEPS*4)) {
+			pwm_a = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS*3];
+			pwm_b = this._MICROSTEP_CURVE[this._MICROSTEPS*4 - this._currentStep];
+        	}
+        }
+
+	// go to next 'step' and wrap around
+	this._currentStep += this._MICROSTEPS * 4;
+	this._currentStep %= this._MICROSTEPS * 4;
+
+	// only really used for microstepping, otherwise always on!
+	this._pwmDriver.setPWM(this._PWMA, 0, pwm_a*16, callback);
+	this._pwmDriver.setPWM(this._PWMB, 0, pwm_b*16, callback);
+
+	// set up coil energizing!
+	var coils = [0, 0, 0, 0]
+
+	if (style == this._MICROSTEP) {
+		if ((this._currentStep >= 0) && (this._currentStep < this._MICROSTEPS)) {
+			coils = [1, 1, 0, 0];
+	        } else if ((this._currentStep >= this._MICROSTEPS) && (this._currentStep < this._MICROSTEPS*2)) {
+			coils = [0, 1, 1, 0];
+		} else if ((this._currentStep >= this._MICROSTEPS*2) && (this._currentStep < this._MICROSTEPS*3)) {
+			coils = [0, 0, 1, 1];
+            	} else if ((this._currentStep >= this._MICROSTEPS*3) && (this._currentStep < this._MICROSTEPS*4)) {
+			coils = [1, 0, 0, 1];
+        	}
         } else {
-			step2coils = [ 	[1, 0, 0, 0], 
+		var step2coils = [ 	[1, 0, 0, 0], 
 				[1, 1, 0, 0],
 				[0, 1, 0, 0],
 				[0, 1, 1, 0],
@@ -312,42 +311,57 @@ class Stepper_Motor_Driver {
 				[0, 0, 1, 1],
 				[0, 0, 0, 1],
 				[1, 0, 0, 1] ];
-			coils = step2coils[int(this._currentStep/(this._MICROSTEPS/2))];
+		coils = step2coils[Math.floor(this._currentStep/(this._MICROSTEPS/2))];
         }
 
-		// print "coils state = " + str(coils)
-		this._pwmDriver.setPin(this._AIN2, coils[0], callback);
-		this._pwmDriver.setPin(this._BIN1, coils[1], callback);
-		this._pwmDriver.setPin(this._AIN1, coils[2], callback);
-		this._pwmDriver.setPin(this._BIN2, coils[3], callback);
+	// print "coils state = " + str(coils)
+	this.setPin(this._AIN2, coils[0], callback);
+	this.setPin(this._BIN1, coils[1], callback);
+	this.setPin(this._AIN1, coils[2], callback);
+	this.setPin(this._BIN2, coils[3], callback);
 
-		return this._currentStep
+	return this._currentStep
     }
 
     step(steps, command, stepStyle, callback) {
-        secPerStep = this._secPerStep;
-		latestStep = 0;
+        var secPerStep = this._secPerStep;
+	var latestStep = 0;
 		
-		if (stepStyle == this._INTERLEAVE)
-			secPerStep = secPerStep / 2.0;
-		if (stepStyle == this._MICROSTEP) {
-			secPerStep /= this._MICROSTEPS;
-			steps *= this._MICROSTEPS;
-			console.log(secPerStep , " sec per step");
+	if (stepStyle == this._INTERLEAVE)
+		secPerStep = secPerStep / 2.0;
+	if (stepStyle == this._MICROSTEP) {
+		secPerStep /= this._MICROSTEPS;
+		steps *= this._MICROSTEPS;
+		console.log(secPerStep , " sec per step");
         }
 
-		for(var i = 0; i < steps; i++) {
-			latestStep = this.oneStep(command, stepStyle, callback);
-			sleep(secPerStep * 1000).then(() => console.log("Sleep"));
+	for(var i = 0; i < steps; i++) {
+		latestStep = this.oneStep(command, stepStyle, callback);
+		sleep(secPerStep * 1000).then(() => console.log("Sleep"));
         }
-		if (stepStyle == this._MICROSTEP) {
-			// this is an edge case, if we are in between full steps, lets just keep going
-		    // so we end on a full step
-			while((lateststep != 0) && (lateststep != this._MICROSTEPS)) {
-				lateststep = this.oneStep(command, stepStyle, callback);
-				sleep(secPerStep * 1000).then(() => console.log("Sleep"));
+	if (stepStyle == this._MICROSTEP) {
+		// this is an edge case, if we are in between full steps, lets just keep going
+		// so we end on a full step
+		while((lateststep != 0) && (lateststep != this._MICROSTEPS)) {
+			lateststep = this.oneStep(command, stepStyle, callback);
+			sleep(secPerStep * 1000).then(() => console.log("Sleep"));
             }
         }
+    }
+
+    setPin(pin, value, callback) {
+
+        if (pin < 0 || pin > 15)
+            throw "PWM pin must be between 0 and 15 inclusive";
+
+        if (value != 0 && value != 1)
+            throw "Pin value must be 0 or 1!";
+
+        if (value == 0)
+            this._pwmDriver.setPWM(pin, 0, 4096, callback);
+
+        if (value == 1)
+            this._pwmDriver.setPWM(pin, 4096, 0, callback);
     }
 }
 
