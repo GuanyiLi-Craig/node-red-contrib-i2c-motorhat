@@ -216,23 +216,23 @@ class Stepper_Motor_Driver {
 
         // first determine what sort of stepping procedure we're up to
         if (style == this._SINGLE) {
-            if ((this._currentStep/(this._MICROSTEPS/2)) % 2) {
+            if ((parseInt(this._currentStep/(this._MICROSTEPS/2))) % 2) {
                 // we're at an odd step, weird
                 if (command == this._FORWARD)
                     this._currentStep += this._MICROSTEPS/2;
                 else
                     this._currentStep -= this._MICROSTEPS/2;
+            } else {
+                // go to next even step
+                if (command == this._FORWARD)
+                    this._currentStep += this._MICROSTEPS;
+                else
+                    this._currentStep -= this._MICROSTEPS;
             }
-        } else {
-            // go to next even step
-            if (command == this._FORWARD)
-                this._currentStep += this._MICROSTEPS;
-            else
-                this._currentStep -= this._MICROSTEPS;
         }
 
         if (style == this._DOUBLE) {
-            if (!(this._currentStep/(this._MICROSTEPS/2) % 2)) {
+            if (!parseInt((this._currentStep/(this._MICROSTEPS/2)) % 2)) {
                 // we're at an even step, weird
                 if (command == this._FORWARD)
                     this._currentStep += this._MICROSTEPS/2;
@@ -263,8 +263,10 @@ class Stepper_Motor_Driver {
                 // go to next 'step' and wrap around
                 this._currentStep += this._MICROSTEPS * 4;
                 this._currentStep %= this._MICROSTEPS * 4;
-                pwm_a = pwm_b = 0;
             }
+
+            pwm_a = 0;
+            pwm_b = 0;
 
             if ((this._currentStep >= 0) && (this._currentStep < this._MICROSTEPS)) {
                 pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS - this._currentStep];
@@ -311,7 +313,7 @@ class Stepper_Motor_Driver {
                             [0, 0, 1, 1],
                             [0, 0, 0, 1],
                             [1, 0, 0, 1]];
-            coils = step2coils[Math.floor(this._currentStep/(this._MICROSTEPS/2))];
+            coils = step2coils[parseInt(this._currentStep/(this._MICROSTEPS/2))];
         }
 
         // print "coils state = " + str(coils)
@@ -332,12 +334,13 @@ class Stepper_Motor_Driver {
         if (stepStyle == this._MICROSTEP) {
             secPerStep /= this._MICROSTEPS;
             steps *= this._MICROSTEPS;
-            console.log(secPerStep , " sec per step");
         }
+        console.log(secPerStep , " sec per step");
 
         for(var i = 0; i < steps; i++) {
             sleep(secPerStep * 1000).then(() => {
                 latestStep = this.oneStep(command, stepStyle, callback);
+                console.log("Sleep " + secPerStep)
             });
         }
 
