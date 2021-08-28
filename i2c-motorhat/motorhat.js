@@ -107,8 +107,8 @@ module.exports = function(RED) {
         
         const pwmDriver = new PWM_Driver(this.address, this.bus);
         const callbackNode = (err) => {
-                if (err) { node.error(err, n); }
-                else { node.send(n); }
+            if (err) { node.error(err, n); }
+            else { node.send(n); }
         };
         pwmDriver.init(callbackNode);
         this.stepperMotors = [
@@ -164,19 +164,19 @@ const sleep = (milliseconds) => {
 
 class Stepper_Motor_Driver {
     constructor(pwmDriver, motorIndex, steps) {
-        this._MICROSTEPS = 8;
+    this._MICROSTEPS = 8;
     this._MICROSTEP_CURVE = [0, 50, 98, 142, 180, 212, 236, 250, 255];
-        this._FORWARD = 1;
-        this._BACKWARD = 2;
-        this._BRAKE = 3;
-        this._RELEASE = 4;
-    
-        this._SINGLE = 1;
-        this._DOUBLE = 2;
-        this._INTERLEAVE = 3;
-        this._MICROSTEP = 4;
+    this._FORWARD  = 1;
+    this._BACKWARD = 2;
+    this._BRAKE    = 3;
+    this._RELEASE  = 4;
 
-        this._pwmDriver = pwmDriver;
+    this._SINGLE     = 1;
+    this._DOUBLE     = 2;
+    this._INTERLEAVE = 3;
+    this._MICROSTEP  = 4;
+
+    this._pwmDriver = pwmDriver;
     this._revSteps = steps;
     this._motorIndex = motorIndex;
     this._secPerStep = 0.1;
@@ -269,13 +269,13 @@ class Stepper_Motor_Driver {
             if ((this._currentStep >= 0) && (this._currentStep < this._MICROSTEPS)) {
                 pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS - this._currentStep];
                 pwm_b = this._MICROSTEP_CURVE[this._currentStep];
-                    } else if ((this._currentStep >= this._MICROSTEPS) && (this._currentStep < this._MICROSTEPS*2)) {
+            } else if ((this._currentStep >= this._MICROSTEPS) && (this._currentStep < this._MICROSTEPS*2)) {
                 pwm_a = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS];
                 pwm_b = this._MICROSTEP_CURVE[this._MICROSTEPS*2 - this._currentStep];
-                    } else if ((this._currentStep >= this._MICROSTEPS*2) && (this._currentStep < this._MICROSTEPS*3)) {
+            } else if ((this._currentStep >= this._MICROSTEPS*2) && (this._currentStep < this._MICROSTEPS*3)) {
                 pwm_a = this._MICROSTEP_CURVE[this._MICROSTEPS*3 - this._currentStep];
                 pwm_b = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS*2];
-                    } else if ((this._currentStep >= this._MICROSTEPS*3) && (this._currentStep < this._MICROSTEPS*4)) {
+            } else if ((this._currentStep >= this._MICROSTEPS*3) && (this._currentStep < this._MICROSTEPS*4)) {
                 pwm_a = this._MICROSTEP_CURVE[this._currentStep - this._MICROSTEPS*3];
                 pwm_b = this._MICROSTEP_CURVE[this._MICROSTEPS*4 - this._currentStep];
             }
@@ -336,16 +336,19 @@ class Stepper_Motor_Driver {
         }
 
         for(var i = 0; i < steps; i++) {
-            latestStep = this.oneStep(command, stepStyle, callback);
-            sleep(secPerStep * 1000).then(() => console.log("Sleep " + secPerStep));
+            sleep(secPerStep * 1000).then(() => {
+                latestStep = this.oneStep(command, stepStyle, callback);
+            });
         }
 
         if (stepStyle == this._MICROSTEP) {
             // this is an edge case, if we are in between full steps, lets just keep going
             // so we end on a full step
             while((lateststep != 0) && (lateststep != this._MICROSTEPS)) {
-                lateststep = this.oneStep(command, stepStyle, callback);
-                sleep(secPerStep * 1000).then(() => console.log("Sleep " + secPerStep));
+                sleep(secPerStep * 1000).then(() => {
+                    lateststep = this.oneStep(command, stepStyle, callback);
+                    console.log("Sleep " + secPerStep)
+                });
             }
         }
     }
