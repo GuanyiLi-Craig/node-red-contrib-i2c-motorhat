@@ -164,41 +164,41 @@ const sleep = (milliseconds) => {
 
 class Stepper_Motor_Driver {
     constructor(pwmDriver, motorIndex, steps) {
-    this._MICROSTEPS = 8;
-    this._MICROSTEP_CURVE = [0, 50, 98, 142, 180, 212, 236, 250, 255];
-    this._FORWARD  = 1;
-    this._BACKWARD = 2;
-    this._BRAKE    = 3;
-    this._RELEASE  = 4;
+        this._MICROSTEPS = 8;
+        this._MICROSTEP_CURVE = [0, 50, 98, 142, 180, 212, 236, 250, 255];
+        this._FORWARD  = 1;
+        this._BACKWARD = 2;
+        this._BRAKE    = 3;
+        this._RELEASE  = 4;
 
-    this._SINGLE     = 1;
-    this._DOUBLE     = 2;
-    this._INTERLEAVE = 3;
-    this._MICROSTEP  = 4;
+        this._SINGLE     = 1;
+        this._DOUBLE     = 2;
+        this._INTERLEAVE = 3;
+        this._MICROSTEP  = 4;
 
-    this._pwmDriver = pwmDriver;
-    this._revSteps = steps;
-    this._motorIndex = motorIndex;
-    this._secPerStep = 0.1;
-    this._steppingCounter = 0;
-    this._currentStep = 0;
+        this._pwmDriver = pwmDriver;
+        this._revSteps = steps;
+        this._motorIndex = motorIndex;
+        this._secPerStep = 0.1;
+        this._steppingCounter = 0;
+        this._currentStep = 0;
 
-    if (motorIndex == 0) {
-        this._PWMA = 8
-        this._AIN2 = 9
-        this._AIN1 = 10
-        this._PWMB = 13
-        this._BIN2 = 12
-        this._BIN1 = 11
+        if (motorIndex == 0) {
+            this._PWMA = 8
+            this._AIN2 = 9
+            this._AIN1 = 10
+            this._PWMB = 13
+            this._BIN2 = 12
+            this._BIN1 = 11
         } else if (motorIndex == 1) {
-        this._PWMA = 2
-        this._AIN2 = 3
-        this._AIN1 = 4
-        this._PWMB = 7
-        this._BIN2 = 6
-        this._BIN1 = 5
+            this._PWMA = 2
+            this._AIN2 = 3
+            this._AIN1 = 4
+            this._PWMB = 7
+            this._BIN2 = 6
+            this._BIN1 = 5
         } else
-        throw "MotorHAT Stepper must be between 1 and 2 inclusive";
+            throw "MotorHAT Stepper must be between 1 and 2 inclusive";
     }
 
     init(callback) {
@@ -344,9 +344,9 @@ class Stepper_Motor_Driver {
         if (stepStyle == this._MICROSTEP) {
             // this is an edge case, if we are in between full steps, lets just keep going
             // so we end on a full step
-            while((lateststep != 0) && (lateststep != this._MICROSTEPS)) {
+            while((latestStep != 0) && (latestStep != this._MICROSTEPS)) {
                 sleep(secPerStep * 1000).then(() => {
-                    lateststep = this.oneStep(command, stepStyle, callback);
+                    latestStep = this.oneStep(command, stepStyle, callback);
                     console.log("Sleep " + secPerStep)
                 });
             }
