@@ -24,8 +24,8 @@ Node input:
 	* 3 - Brake
 	* 4 - Release
 * runtime
-	* <0 - Run till Release command
-	* >0 - Run for input seconds
+	* < 0 - Run till Release command
+	* Otherwise - Run for input seconds
 
 example input node - 4th DC motor runs for 2 seconds with 250/255 of full speed and forward direction. 
 ```javascript
@@ -39,7 +39,7 @@ controlMsg["runtime"] = 2;
 return controlMsg;
 
 ```
-
+![image](https://user-images.githubusercontent.com/11020337/131263633-25cc48f1-cb2c-413c-a725-d17320049574.png)
 
 Output:
 
