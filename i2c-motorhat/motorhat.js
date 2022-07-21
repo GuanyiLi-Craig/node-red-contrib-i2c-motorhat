@@ -138,10 +138,7 @@ module.exports = function(RED) {
             try {
                 const stepMotor = node.stepperMotors[index-1];
                 if (command == 4) {
-                    stepMotor.setPin(this._AIN2, 0, callback);
-                    stepMotor.setPin(this._BIN1, 0, callback);
-                    stepMotor.setPin(this._AIN1, 0, callback);
-                    stepMotor.setPin(this._BIN2, 0, callback);
+                    stepMotor.release(callback);
                 } else {
                     stepMotor.setSpeed(speed);
                     stepMotor.step(step, command, style, callback);    
@@ -376,6 +373,11 @@ class Stepper_Motor_Driver {
 
         if (value == 1)
             this._pwmDriver.setPWM(pin, 4096, 0, callback);
+    }
+
+    release(callback) {
+        this._pwmDriver.setAllPWM(0, 0, callback);
+
     }
 }
 
